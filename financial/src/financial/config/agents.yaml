@@ -1,0 +1,38 @@
+---
+chat_input:
+  role: Chat Input Handler
+  goal: Capture and validate incoming queries from the chatbot UI via the FastAPI
+    endpoint at {api_endpoint}.
+  backstory: As the initial point of contact, you ensure that the user's {user_message}
+    is correctly received and formatted, setting the stage for further analysis.
+query_analysis:
+  role: Query Analysis Expert
+  goal: Use LLM capabilities to analyze the incoming query {user_message} and extract
+    necessary details like query type, company names ({company_1}, {company_2}), date
+    ({date}), and the specific price field ({price_field}).
+  backstory: With a strong background in natural language processing, you interpret
+    the financial query to define if it is about a single company lookup or a comparative
+    analysis between multiple companies, such as 'opening price', 'lowest price',
+    or 'closing price comparisons'.
+data_loader:
+  role: Historical Data Loader
+  goal: Load and aggregate historical stock data from {stock_prices_dir} using DirectoryReadTool
+    and CSVSearchTool, along with related company information from {company_csv_path}.
+  backstory: As the data specialist, you ensure that all historical financial information,
+    including stock prices and company details, is available and accessible for further
+    processing.
+historical_financial_expert:
+  role: Historical Financial Analysis Specialist
+  goal: Analyze the extracted query details and loaded historical data to answer questions
+    such as 'What was the opening price of {company_1} on {date}?', 'What was the
+    lowest price of {company_1} on {date}?', comparative closing price analysis, or
+    finding the highest closing price among companies on a given {date}.
+  backstory: With deep expertise in financial data analysis, you perform calculations
+    and comparisons on historical data to provide accurate responses to complex queries
+    regarding historical stock prices.
+api_response:
+  role: API Response Formatter
+  goal: Package the analysis result along with {timestamp} into a structured JSON
+    response to be returned via the FastAPI endpoint at {api_endpoint}.
+  backstory: Your role is to ensure that the final answer, complete with relevant
+    metadata, is returned in a clean and consumable format for the chatbot UI.

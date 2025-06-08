@@ -1,0 +1,62 @@
+---
+fastapi_endpoint_setup:
+  description: Set up the FastAPI POST endpoint at {api_endpoint} to receive incoming
+    JSON payloads containing the {user_message} from the chatbot UI.
+  expected_output: A running FastAPI endpoint that listens for requests at {api_endpoint}.
+  async_execution: false
+  agent: chat_input
+request_parsing_validation:
+  description: Parse and validate the incoming JSON payload to extract the {user_message}
+    and any associated metadata.
+  expected_output: A validated {user_message} with correct structure prepared for
+    further processing.
+  async_execution: false
+  agent: chat_input
+llm_query_analysis_task:
+  description: Analyze the {user_message} using LLM to extract key variables such
+    as {company_1}, {company_2} (if applicable), {date}, and {price_field} to determine
+    the type of historical query (e.g. 'opening price', 'lowest price', 'closing price
+    comparison', or 'highest closing price among companies').
+  expected_output: Extracted details including query type, {company_1}, {company_2}
+    (if needed), {date}, and {price_field} that precisely define the required financial
+    inquiry.
+  async_execution: false
+  agent: query_analysis
+  context:
+  - request_parsing_validation
+historical_data_loading_task:
+  description: Use CSVSearchTool and DirectoryReadTool to load historical stock price
+    data from {stock_prices_dir} and company details from {company_csv_path}. The
+    data should include fields like 'Date', 'Open', 'High', 'Low', 'Close', 'Ticker'
+    from stock data and company specifics from company CSV.
+  expected_output: Aggregated historical data ready for querying, including all relevant
+    stock and company details.
+  async_execution: false
+  agent: data_loader
+  context:
+  - request_parsing_validation
+historical_query_processing_task:
+  description: 'Based on the details extracted from the {llm_query_analysis_task}
+    and the loaded data from {historical_data_loading_task}, query the dataset to
+    answer questions like: ''What was the opening price of {company_1} on {date}?'',
+    ''What was the lowest price of {company_1} on {date}?'', ''On {date}, which company
+    had a higher closing price: {company_1} or {company_2}?'', or ''Which company
+    had the highest closing price on {date}?''. Use NL2SQLTool if necessary to form
+    precise queries for data lookup.'
+  expected_output: A detailed answer to the historical stock price query with the
+    requested financial metric and supporting data details.
+  async_execution: false
+  agent: historical_financial_expert
+  context:
+  - llm_query_analysis_task
+  - historical_data_loading_task
+response_packaging_return_task:
+  description: Package the answer obtained from {historical_query_processing_task}
+    together with {timestamp} into a properly formatted JSON response which is then
+    returned via the FastAPI endpoint at {api_endpoint}.
+  expected_output: A JSON object containing the answer to the financial historical
+    query, along with metadata like {timestamp}.
+  async_execution: false
+  agent: api_response
+  context:
+  - historical_query_processing_task
